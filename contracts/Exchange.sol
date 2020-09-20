@@ -142,12 +142,32 @@ contract Exchange is Owned {
     // DEPOSIT AND WITHDRAWAL TOKEN //
     //////////////////////////////////
     function depositToken(string symbolName, uint amount) {
+        require(amount > 0, "Please deposit positive amount");
+        uint8 index = getSymbolIndex(symbolName);
+        require(index > 0, "Token is not listed on the exchange");
+        require(tokenBalanceForAddress[msg.sender][index] += amount > tokenBalanceForAddress[msg.sender][index]);
+        ERC20Interface token = ERC20Interface (tokens[index].tokenContract);
+        if(token.transferFrom(msg.sender, address(this), amount)){
+            tokenBalanceForAddress[msg.sender][index] += amount;
+        }
+        
+        
     }
 
     function withdrawToken(string symbolName, uint amount) {
+        require(amount > 0, "Please withdraw positive amount");
+        uint8 index = getSymbolIndex(symbolName);
+        require(index > 0, "Token is not listed on the exchange");
+        require(tokenBalanceForAddress[msg.sender][index] -= amount < tokenBalanceForAddress[msg.sender][index]);
+        ERC20Interface token = ERC20Interface (tokens[index].tokenContract);
+        require(tokenBalanceForAddress[msg.sender][index] >= amount);
+        if(token.transfer(msg.sender, amount)){
+            tokenBalanceForAddress[msg.sender][index] -= amount;
+        }
     }
 
     function getBalance(string symbolName) constant returns (uint) {
+        return tokenBalanceForAddress[msg.sender][index];
     }
 
 
