@@ -145,6 +145,7 @@ contract Exchange is Owned {
         require(amount > 0, "Please deposit positive amount");
         uint8 index = getSymbolIndex(symbolName);
         require(index > 0, "Token is not listed on the exchange");
+        require(tokens[index].tokenContract != address(0))
         require(tokenBalanceForAddress[msg.sender][index] += amount > tokenBalanceForAddress[msg.sender][index]);
         ERC20Interface token = ERC20Interface (tokens[index].tokenContract);
         if(token.transferFrom(msg.sender, address(this), amount)){
@@ -158,6 +159,7 @@ contract Exchange is Owned {
         require(amount > 0, "Please withdraw positive amount");
         uint8 index = getSymbolIndex(symbolName);
         require(index > 0, "Token is not listed on the exchange");
+        require(tokens[index].tokenContract != address(0))
         require(tokenBalanceForAddress[msg.sender][index] -= amount < tokenBalanceForAddress[msg.sender][index]);
         ERC20Interface token = ERC20Interface (tokens[index].tokenContract);
         require(tokenBalanceForAddress[msg.sender][index] >= amount);
