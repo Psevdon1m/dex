@@ -1,11 +1,11 @@
 pragma solidity ^0.4.13;
 
 
-import "./owned.sol";
+import "./Owned.sol";
 import "./FixedSupplyToken.sol";
 
 
-contract Exchange is owned {
+contract Exchange is Owned {
 
     ///////////////////////
     // GENERAL STRUCTURE //
@@ -70,12 +70,18 @@ contract Exchange is owned {
     // DEPOSIT AND WITHDRAWAL ETHER //
     //////////////////////////////////
     function depositEther() payable {
+        require(balanceEthForAddress[msg.sender] =+ msg.value >= balanceEthForAddress[msg.sender]);
+        balanceEthForAddress[msg.sender] =+ msg.value;
     }
 
     function withdrawEther(uint amountInWei) {
+        require(balanceEthForAddress[msg.sender] >= amountInWei);
+        balanceEthForAddress[msg.sender] -= amountInWei;
+        msg.sender.transfer(amountInWei);
     }
 
     function getEthBalanceInWei() constant returns (uint){
+        return balanceEthForAddress[msg.sender];
     }
 
 
