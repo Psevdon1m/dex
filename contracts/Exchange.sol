@@ -43,6 +43,24 @@ contract Exchange is Owned {
         uint256 amountSellPrices;
      }
 
+    event tokenAddedToSystem(uint _SymbolIndex, string _token, uint _timestamp);
+
+     //Deposit/Withdrawal events
+    event DepositForTokenReceived(address indexed _from, uint indexed _symbolIndex, uint amount, uint _timestamp);
+    event WitdhrawalToken(address indexed _to, uint indexed _symbolIndex, uint _amount, uint _timestamp);
+    event DepositForEthReceived( address indexed _from, uint _amount, uint _timestamp);
+    event WithdrawalEth(address indexed _to, uint _amount, uint _timestamp);
+
+    //Trading events
+    event LimitSellOrderCreated(uint indexed _symbolIndex, address indexed _who, uint _amountTokensm uint _priceInWei, uint _orderKey);
+    event SellOrderFulfilled(uint endexed _symbolIndex, uint _amount, uint _priceInWei, uint _orderKey);
+    event SellOrderCanceled(uint indexed _symbolIndex, uint _priceInWei, uint _orderKey);
+
+    event LimitBuyOrderCreated(uint indexed _symbolIndex, address indexed _who, uint _amountToken, uint _priceInWei, uint _orderKey);
+    event BuyOrderFulfilled(uint indexed _symbolIndex, uint _amount, uint _priceInWei, uint _orderKey);
+    event BuyOrderCanceled(uint indexed _symbolIndex, uint _priceInWei, uint _orderKey);
+
+
 
     //we support a max of 255 tokens...
     mapping (uint8 => Token) tokens;
@@ -72,12 +90,16 @@ contract Exchange is Owned {
     function depositEther() payable {
         require(balanceEthForAddress[msg.sender] =+ msg.value >= balanceEthForAddress[msg.sender]);
         balanceEthForAddress[msg.sender] =+ msg.value;
+        emit DepositForEthReceived( msg.sender, msg.value, now);
+
     }
 
     function withdrawEther(uint amountInWei) {
         require(balanceEthForAddress[msg.sender] >= amountInWei);
         balanceEthForAddress[msg.sender] -= amountInWei;
         msg.sender.transfer(amountInWei);
+        emit WithdrawalEth(msg.sender, amountInWei, now);
+        
     }
 
     function getEthBalanceInWei() constant returns (uint){
@@ -94,6 +116,7 @@ contract Exchange is Owned {
         symbolNameIndex++;
         tokens[symbolNameIndex].tokenAddress = erc20TokenAddress;
         tokens[symbolNameIndex].symbolName = symbolName;
+        emit tokenAddedToSystem(symbolNameIndex, symbolName, now)
         
     }
 
@@ -150,6 +173,7 @@ contract Exchange is Owned {
         ERC20Interface token = ERC20Interface (tokens[index].tokenContract);
         if(token.transferFrom(msg.sender, address(this), amount)){
             tokenBalanceForAddress[msg.sender][index] += amount;
+            emit DepositForTokenReceived(msg.sender, index, amount, now);
         }
         
         
@@ -165,6 +189,7 @@ contract Exchange is Owned {
         require(tokenBalanceForAddress[msg.sender][index] >= amount);
         if(token.transfer(msg.sender, amount)){
             tokenBalanceForAddress[msg.sender][index] -= amount;
+            emit WitdhrawalToken(msg.sender, index, amount, now);
         }
     }
 
